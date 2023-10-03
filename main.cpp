@@ -1,9 +1,8 @@
-// 
+#include "DSString.h"
 #include <iostream>
-#include <cstring>
 #include <vector>
 #include <unordered_map>
-#include <unordered_set> // Add this line
+#include <unordered_set>
 #include <sstream>
 #include <stdexcept>
 #include <fstream>
@@ -11,113 +10,7 @@
 
 std::unordered_set<std::string> stopwords;
 
-class DSString {
-private:
-    char* data;
-    size_t len;
-
-public:
-    // Constructors
-    DSString() : data(nullptr), len(0) {}
-
-    DSString(const char* str) {
-        len = strlen(str);
-        data = new char[len + 1];
-        strcpy(data, str);
-    }
-
-    DSString(const char* begin, const char* end) {
-        len = end - begin;
-        data = new char[len + 1];
-        strncpy(data, begin, len);
-        data[len] = '\0'; // Null-terminate the string
-    }
-
-    DSString(const DSString& other) : len(other.len) {
-        data = new char[len + 1];
-        strcpy(data, other.data);
-    }
-
-    // Destructor
-    ~DSString() {
-        delete[] data;
-    }
-
-    // Assignment operator
-    DSString& operator=(const DSString& other) {
-        if (this != &other) {
-            delete[] data;
-            len = other.len;
-            data = new char[len + 1];
-            strcpy(data, other.data);
-        }
-        return *this;
-    }
-
-    // Concatenation operator
-    DSString operator+(const DSString& other) const {
-        DSString result;
-        result.len = len + other.len;
-        result.data = new char[result.len + 1];
-        strcpy(result.data, data);
-        strcat(result.data, other.data);
-        return result;
-    }
-
-    // Equality operator
-    bool operator==(const DSString& other) const {
-        return strcmp(data, other.data) == 0;
-    }
-
-    // Length function
-    size_t length() const {
-        return len;
-    }
-
-    // Access character at index
-    char operator[](size_t index) const {
-        if (index < len) {
-            return data[index];
-        }
-        throw std::out_of_range("Index out of range");
-    }
-
-    // Convert to C-style string
-    const char* c_str() const {
-        return data;
-    }
-
-    // Custom hash function for DSString
-    struct Hash {
-        size_t operator()(const DSString& str) const {
-            // You can use a simple hash function like this
-            size_t hash = 0;
-            for (size_t i = 0; i < str.len; i++) {
-                hash = (hash * 31) + static_cast<size_t>(str.data[i]);
-            }
-            return hash;
-        }
-    };
-};
-
-void loadStopwords(const std::string& stopwordsFile) {
-    std::ifstream stopwordsInput(stopwordsFile);
-    if (!stopwordsInput.is_open()) {
-        std::cerr << "Failed to open stopwords file." << std::endl;
-        return;
-    }
-
-    std::string word;
-    while (std::getline(stopwordsInput, word)) {
-        // DSString dsWord(word.c_str()); // Convert to DSString
-        stopwords.insert(word);
-    }
-
-    stopwordsInput.close();
-}
-
-
-// Tokenization function
+// Tokenization functiona
 std::vector<DSString> tokenizeAndRemoveStopwords(const DSString& line, const std::unordered_set<std::string>& stopwords) {
     std::vector<DSString> words;
 
@@ -147,34 +40,6 @@ std::vector<DSString> tokenizeAndRemoveStopwords(const DSString& line, const std
 
     return wordsWithoutStopwords;
 }
-
-
-
-class Tweet {
-public:
-    Tweet(const std::vector<DSString>& textTokens, DSString sentiment) : sentiment(sentiment) {
-    // Ensure the textTokens vector is not empty
-    if (textTokens.empty()) {
-        // Handle the case where textTokens is empty
-        text = "No text available";
-
-    } else {
-        // Combine the DSString tokens into a single DSString for text
-        for (const DSString& token : textTokens) {
-            text = text + " " + token;
-        }
-    }
-}
-    DSString getText() const { return text; }
-    DSString getSentiment() const { return sentiment; }
-    void outputTextToCout() const {
-        std::cout << "Text: " << text.c_str() << std::endl;
-    }
-
-private:
-    DSString text;
-    DSString sentiment;
-};
 
 class SentimentClassifier {
 public:
@@ -349,49 +214,84 @@ bool containsString(const std::vector<DSString>& vec, const DSString& str) {
         outputFile.close();
     }
 
+    void loadStopwords(const std::string& stopwordsFile) {
+    std::ifstream stopwordsInput(stopwordsFile);
+    if (!stopwordsInput.is_open()) {
+        std::cerr << "Failed to open stopwords file." << std::endl;
+        return;
+    }
+
+    std::string word;
+    while (std::getline(stopwordsInput, word)) {
+        stopwords.insert(word);
+    }
+
+    stopwordsInput.close();
+}
+
     private:
     int totalPositiveWords;
     int totalNegativeWords;
 
 };
 
+class Tweet {
+public:
+    Tweet(const std::vector<DSString>& textTokens, DSString sentiment) : sentiment(sentiment) {
+    // Ensure the textTokens vector is not empty
+    if (textTokens.empty()) {
+        // Handle the case where textTokens is empty
+        text = "No text available";
 
+    } else {
+        // Combine the DSString tokens into a single DSString for text
+        for (const DSString& token : textTokens) {
+            text = text + " " + token;
+        }
+    }
+}
+    DSString getText() const { return text; }
+    DSString getSentiment() const { return sentiment; }
+    void outputTextToCout() const {
+        std::cout << "Text: " << text.c_str() << std::endl;
+    }
+
+private:
+    DSString text;
+    DSString sentiment;
+};
 
 int main(int argc, char* argv[]) {
-    // Example usage
-
     DSString str1 = "Hello, ";
     DSString str2 = "world!";
 
     DSString result = str1 + str2;
-    std::cout << result.c_str() << std::endl; // Output: Hello, world!
+    std::cout << result.c_str() << std::endl;
 
     if (str1 == str2) {
         std::cout << "Strings are equal." << std::endl;
     } else {
-        std::cout << "Strings are not equal." << std::endl; // Output: Strings are not equal.
+        std::cout << "Strings are not equal." << std::endl;
     }
 
-    std::cout << "Length of result: " << result.length() << std::endl; // Output: Length of result: 13
+    std::cout << "Length of result: " << result.length() << std::endl;
 
     try {
         char character = result[6];
-        std::cout << "Character at index 6: " << character << std::endl; // Output: Character at index 6: ,
+        std::cout << "Character at index 6: " << character << std::endl;
 
-        // Attempt to access an out-of-range index
         char outOfRangeChar = result[20]; // Throws std::out_of_range exception
     } catch (const std::out_of_range& e) {
-        std::cerr << "Error: " << e.what() << std::endl; // Output: Error: Index out of range
+        std::cerr << "Error: " << e.what() << std::endl;
     }
 
     // Tokenization test
     DSString tweetText = "This is a sample tweet! #NLP #Tokenization";
-    std::vector<DSString> words = tokenizeAndRemoveStopwords(tweetText,stopwords);
+    std::vector<DSString> words = tokenizeAndRemoveStopwords(tweetText, stopwords);
 
     for (const DSString& word : words) {
         std::cout << word.c_str() << std::endl;
     }
-
 
     if (argc != 6) {
         std::cerr << "Usage: " << argv[0] << " <training_file> <testing_file> <sentiment_file> <results_file> <accuracy_file>" << std::endl;
@@ -405,7 +305,7 @@ int main(int argc, char* argv[]) {
     std::string resultsFile = argv[4];
     std::string accuracyFile = argv[5];
 
-    std::cout << trainingFile << " " << testingFile << " " << sentimentFile << " " << resultsFile << " " << accuracyFile<<std::endl;
+    std::cout << trainingFile << " " << testingFile << " " << sentimentFile << " " << resultsFile << " " << accuracyFile << std::endl;
 
     // Load training data and testing data
     std::vector<std::vector<DSString>> positiveTweets;
@@ -420,9 +320,7 @@ int main(int argc, char* argv[]) {
     classifier.loadTrainingData(trainingFile, positiveTweets, negativeTweets);
 
     // Load testing data and sentiments from the testing and sentiment files
-    classifier.loadTestingData(testingFile, sentimentFile, positiveTweets,negativeTweets,resultsFile,accuracyFile);
-
-
+    classifier.loadTestingData(testingFile, sentimentFile, positiveTweets, negativeTweets, resultsFile, accuracyFile);
 
     return 0;
 }
