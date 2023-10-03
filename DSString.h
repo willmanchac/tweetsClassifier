@@ -10,6 +10,8 @@
 
 #include <iostream>
 
+struct DSStringHash;
+
 class DSString
 {
 
@@ -26,6 +28,8 @@ public:
 
     DSString();
     DSString(const char *); // constructor that converts a cstring
+    DSString(const char* begin, const char* end);
+
     // you can also provide  DSString(const string &); for std::string
 
     // Rule of three is needed if dynamic memory allocation is used
@@ -44,6 +48,9 @@ public:
      */
     DSString operator+(const DSString &) const;
 
+    // Const version of operator[]
+   const char& operator[](size_t index) const;
+
     /**
      * Standard relational operators to compare and order your strings.
      * Feel free to add additional.
@@ -61,6 +68,8 @@ public:
      * @return a DSString object containing the requested substring
      **/
     DSString substring(size_t start, size_t numChars) const;
+
+
 
     /**
      * @brief Returns a new string object with all characters in lowercase
@@ -90,6 +99,17 @@ public:
     // you may want to add a find(...) function that will search for a
     // substring within a string or a function that breaks a string into words.
     // You will need a split or tokenize function.
+
+    // Define a Hash type alias
+    using Hash = DSStringHash;
+};
+
+// Define the DSStringHash struct here
+struct DSStringHash {
+    std::size_t operator()(const DSString& str) const {
+        // Implement a suitable hash function here, e.g., using std::hash
+        return std::hash<std::string>{}(str.c_str());
+    }
 };
 
 #endif
